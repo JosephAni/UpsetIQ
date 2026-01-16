@@ -1,0 +1,26 @@
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+requests==2.31.0
+python-dotenv==1.0.0
+pydantic==2.5.3
+httpx>=0.24.0,<0.25.0
+urllib3>=2.0.0
+
+# Pipeline & Scheduling
+apscheduler==3.10.4
+
+# Database
+supabase==2.3.0
+
+# Sentiment Analysis
+praw==7.7.1
+tweepy==4.14.0
+textblob==0.18.0
+vaderSentiment==3.3.2
+
+# WebSocket & Real-time
+websockets==12.0
+python-socketio==5.10.0
+
+# Push Notifications
+firebase-admin==6.4.0
