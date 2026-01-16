@@ -2,6 +2,12 @@
 
 React Native mobile application for UpsetIQ - Live Upset Intelligence for sports betting insights.
 
+## Screenshot
+
+![UpsetIQ Mobile App Home Screen](../docs/screenshots/app-home-screen.png)
+
+Home screen displaying game cards with upset probability scores (UPS), risk indicators, probability breakdowns, and sport filtering options.
+
 ## Tech Stack
 
 - **React Native** with Expo
@@ -40,7 +46,7 @@ const API_BASE_URL = 'http://localhost:8000';  // Development
 
 ## Project Structure
 
-```
+```text
 frontend/
 ├── App.tsx                 # App entry point
 ├── app.json               # Expo configuration
@@ -76,21 +82,25 @@ frontend/
 ## Features
 
 ### Game Board
+
 - View upcoming games with upset probability
 - Sort by UPS, date, or sport
 - Filter by sport (NFL, NBA, MLB, etc.)
 
 ### Game Details
+
 - Full prediction breakdown
 - Key drivers for upset potential
 - Market signals and trends
 - Team injury reports (via SportsDataIO)
 
 ### Upset Alerts
+
 - Set custom UPS thresholds
 - Push notifications when thresholds crossed
 
 ### Leaderboard
+
 - Track prediction accuracy
 - Compete with other users
 
@@ -136,6 +146,6 @@ npx expo run:android --variant release
 
 Create a `.env` file for environment-specific configuration:
 
-```
+```env
 API_BASE_URL=https://api.upsetiq.com
 ```

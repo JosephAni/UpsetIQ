@@ -76,6 +76,7 @@ coverage/
 *.apk
 *.ap_
 *.aab
+local.properties
 
 # iOS
 *.pbxuser

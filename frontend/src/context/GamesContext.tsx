@@ -92,13 +92,13 @@ export const GamesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return false;
       }
 
-      // For NFL, use minUpsPct if specified, otherwise use confidenceThreshold
-      if (game.sport === 'NFL' && filter.minUpsPct !== undefined) {
+      // Use minUpsPct if specified (for all sports with sport-specific filters), otherwise use confidenceThreshold
+      if (filter.minUpsPct !== undefined) {
         if (game.prediction.upset_probability < filter.minUpsPct) {
           return false;
         }
       } else {
-        // Filter by confidence threshold for non-NFL
+        // Filter by confidence threshold
         if (game.prediction.upset_probability < filter.confidenceThreshold) {
           return false;
         }
@@ -107,6 +107,58 @@ export const GamesProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       // NFL prime time filter
       if (game.sport === 'NFL' && filter.onlyPrimeTime && !game.isPrimeTime) {
         return false;
+      }
+
+      // NBA national TV filter (using highest UPS games as proxy)
+      // Note: You may want to add an isNationalTv field to Game type later
+      if (game.sport === 'NBA' && filter.onlyNationalTv) {
+        // For now, assume top 30% of games by UPS are "national TV"
+        const allNbaGames = games.filter(g => g.sport === 'NBA');
+        const sorted = [...allNbaGames].sort((a, b) => b.prediction.upset_probability - a.prediction.upset_probability);
+        const threshold = sorted[Math.floor(sorted.length * 0.3)]?.prediction.upset_probability ?? 0;
+        if (game.prediction.upset_probability < threshold) {
+          return false;
+        }
+      }
+
+      // MLB high-stakes filter (using highest UPS games as proxy)
+      if (game.sport === 'MLB' && filter.onlyHighStakes) {
+        const allMlbGames = games.filter(g => g.sport === 'MLB');
+        const sorted = [...allMlbGames].sort((a, b) => b.prediction.upset_probability - a.prediction.upset_probability);
+        const threshold = sorted[Math.floor(sorted.length * 0.3)]?.prediction.upset_probability ?? 0;
+        if (game.prediction.upset_probability < threshold) {
+          return false;
+        }
+      }
+
+      // NHL marquee filter (using highest UPS games as proxy)
+      if (game.sport === 'NHL' && filter.onlyMarquee) {
+        const allNhlGames = games.filter(g => g.sport === 'NHL');
+        const sorted = [...allNhlGames].sort((a, b) => b.prediction.upset_probability - a.prediction.upset_probability);
+        const threshold = sorted[Math.floor(sorted.length * 0.3)]?.prediction.upset_probability ?? 0;
+        if (game.prediction.upset_probability < threshold) {
+          return false;
+        }
+      }
+
+      // Soccer featured filter (using highest UPS games as proxy)
+      if (game.sport === 'Soccer' && filter.onlyFeatured) {
+        const allSoccerGames = games.filter(g => g.sport === 'Soccer');
+        const sorted = [...allSoccerGames].sort((a, b) => b.prediction.upset_probability - a.prediction.upset_probability);
+        const threshold = sorted[Math.floor(sorted.length * 0.3)]?.prediction.upset_probability ?? 0;
+        if (game.prediction.upset_probability < threshold) {
+          return false;
+        }
+      }
+
+      // CFB top games filter (using highest UPS games as proxy)
+      if (game.sport === 'CFB' && filter.onlyTopGames) {
+        const allCfbGames = games.filter(g => g.sport === 'CFB');
+        const sorted = [...allCfbGames].sort((a, b) => b.prediction.upset_probability - a.prediction.upset_probability);
+        const threshold = sorted[Math.floor(sorted.length * 0.3)]?.prediction.upset_probability ?? 0;
+        if (game.prediction.upset_probability < threshold) {
+          return false;
+        }
       }
 
       // Filter by date (if specified)

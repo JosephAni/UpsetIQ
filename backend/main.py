@@ -418,6 +418,13 @@ def list_games(sport: Optional[str] = Query("NFL", description="Sport to filter 
             fetched_at=fetched_at,
             cached=cached,
         )
+    except ValueError as e:
+        # Authentication or configuration errors (401, 403, invalid key)
+        logger.error(f"API configuration error: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"API configuration error: {str(e)}. Please check your ODDS_API_KEY in the .env file."
+        )
     except Exception as e:
         logger.error(f"Error fetching games: {e}")
         raise HTTPException(status_code=500, detail=str(e))

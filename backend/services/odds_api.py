@@ -1,6 +1,7 @@
 """Odds API service - fetches live odds data from the-odds-api.com."""
 import os
 import time
+import logging
 from datetime import datetime, timezone
 from typing import List, Tuple, Optional, Dict, Any
 
@@ -11,6 +12,8 @@ from models import GameWithPrediction
 from services.transformer import transform_odds_to_games
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 API_KEY = os.getenv("ODDS_API_KEY")
 BASE_URL = "https://api.the-odds-api.com/v4"
@@ -60,6 +63,25 @@ def fetch_odds_from_api(sport: str = "NFL") -> Tuple[str, List[Dict]]:
     url = f"{BASE_URL}/sports/{sport_key}/odds"
     
     response = requests.get(url, params=params, timeout=30)
+    
+    # Handle authentication errors with better messages
+    if response.status_code == 401:
+        raise ValueError(
+            f"ODDS_API_KEY is invalid or expired. "
+            f"Please check your API key at https://the-odds-api.com/. "
+            f"Status: {response.status_code}"
+        )
+    elif response.status_code == 403:
+        raise ValueError(
+            f"ODDS_API_KEY access denied. Check your API plan and usage limits. "
+            f"Status: {response.status_code}"
+        )
+    elif response.status_code == 429:
+        raise ValueError(
+            f"API rate limit exceeded. Please wait before making more requests. "
+            f"Status: {response.status_code}"
+        )
+    
     response.raise_for_status()
     
     pulled_at = datetime.now(timezone.utc).isoformat()
@@ -106,11 +128,22 @@ def get_games_with_predictions(
         
         return games, fetched_at, False
         
+    except ValueError as e:
+        # Re-raise ValueError (auth/rate limit errors) - don't cache these
+        raise
     except requests.exceptions.RequestException as e:
         # If API fails and we have cached data, return it
-        if _cache.get("data") is not None:
+        if _cache.get("data") is not None and _cache.get("sport") == sport:
+            logger.warning(f"API request failed, returning cached data: {str(e)}")
             return _cache["data"], _cache["fetched_at"], True
-        raise Exception(f"Failed to fetch odds data: {str(e)}")
+        # If no cache, raise with more context
+        error_msg = str(e)
+        if "401" in error_msg or "Unauthorized" in error_msg:
+            raise ValueError(
+                f"ODDS_API_KEY is invalid or expired. Please check your API key. "
+                f"Original error: {error_msg}"
+            )
+        raise Exception(f"Failed to fetch odds data: {error_msg}")
 
 
 def get_remaining_requests() -> Optional[int]:

@@ -4,6 +4,12 @@
 
 UpsetIQ identifies high-probability upset opportunities by analyzing odds movements, injury reports, team performance, and market sentiment.
 
+## Screenshots
+
+![UpsetIQ Mobile App](docs/screenshots/app-home-screen.png)
+
+*Home screen showing upset probability scores, game cards with detailed risk indicators, and sport filtering options*
+
 ## Project Structure
 
 ```text

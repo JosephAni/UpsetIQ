@@ -94,4 +94,14 @@ export interface FilterState {
   // NFL-specific filters
   minUpsPct?: number; // UPS threshold for NFL (default 55)
   onlyPrimeTime?: boolean; // Show only prime time games
+  // NBA-specific filters
+  onlyNationalTv?: boolean; // Show only national TV games
+  // MLB-specific filters
+  onlyHighStakes?: boolean; // Show only high-stakes games
+  // NHL-specific filters
+  onlyMarquee?: boolean; // Show only marquee matchups
+  // Soccer-specific filters
+  onlyFeatured?: boolean; // Show only featured matches
+  // CFB-specific filters
+  onlyTopGames?: boolean; // Show only top games
 }

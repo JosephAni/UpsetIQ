@@ -13,10 +13,28 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FilterBar } from '../components/FilterBar';
 import { NflFilters } from '../components/NflFilters';
+import { NbaFilters } from '../components/NbaFilters';
+import { MlbFilters } from '../components/MlbFilters';
+import { NhlFilters } from '../components/NhlFilters';
+import { SoccerFilters } from '../components/SoccerFilters';
+import { CfbFilters } from '../components/CfbFilters';
 import { UpsetCard } from '../components/cards/UpsetCard';
 import { useGames } from '../context/GamesContext';
 import { useAlerts } from '../context/AlertsContext';
+import type { GameWithPrediction } from '../types';
 import { groupGamesByDayThisWeek, getPrimeTimeGames } from '../utils/nflWeek';
+import {
+  groupNbaGamesByDay,
+  getNationalTvGames,
+  groupMlbGamesByDay,
+  getHighStakesGames,
+  groupNhlGamesByDay,
+  getMarqueeGames,
+  groupSoccerGamesByDay,
+  getFeaturedMatches,
+  groupCfbGamesByDay,
+  getTopGames,
+} from '../utils/sportUtils';
 
 type RootStackParamList = {
   Home: undefined;
@@ -40,11 +58,23 @@ export const HomeScreen: React.FC = () => {
   } = useGames();
   const { addAlert } = useAlerts();
 
-  const isNflMode = filter.sport === 'NFL';
+  const currentSport = filter.sport;
+  const isNflMode = currentSport === 'NFL';
+  const isNbaMode = currentSport === 'NBA';
+  const isMlbMode = currentSport === 'MLB';
+  const isNhlMode = currentSport === 'NHL';
+  const isSoccerMode = currentSport === 'Soccer';
+  const isCfbMode = currentSport === 'CFB';
+  const isSportMode = isNflMode || isNbaMode || isMlbMode || isNhlMode || isSoccerMode || isCfbMode;
 
-  // NFL-specific filter state
+  // Sport-specific filter state
   const minUpsPct = filter.minUpsPct ?? 55;
   const onlyPrimeTime = filter.onlyPrimeTime ?? false;
+  const onlyNationalTv = filter.onlyNationalTv ?? false;
+  const onlyHighStakes = filter.onlyHighStakes ?? false;
+  const onlyMarquee = filter.onlyMarquee ?? false;
+  const onlyFeatured = filter.onlyFeatured ?? false;
+  const onlyTopGames = filter.onlyTopGames ?? false;
 
   const handleCardPress = (gameId: string) => {
     navigation.navigate('GameDetail', { gameId });
@@ -73,6 +103,46 @@ export const HomeScreen: React.FC = () => {
     });
   };
 
+  const handleNbaFilterChange = (newMinUpsPct: number, newOnlyNationalTv: boolean) => {
+    setFilter({
+      ...filter,
+      minUpsPct: newMinUpsPct,
+      onlyNationalTv: newOnlyNationalTv,
+    });
+  };
+
+  const handleMlbFilterChange = (newMinUpsPct: number, newOnlyHighStakes: boolean) => {
+    setFilter({
+      ...filter,
+      minUpsPct: newMinUpsPct,
+      onlyHighStakes: newOnlyHighStakes,
+    });
+  };
+
+  const handleNhlFilterChange = (newMinUpsPct: number, newOnlyMarquee: boolean) => {
+    setFilter({
+      ...filter,
+      minUpsPct: newMinUpsPct,
+      onlyMarquee: newOnlyMarquee,
+    });
+  };
+
+  const handleSoccerFilterChange = (newMinUpsPct: number, newOnlyFeatured: boolean) => {
+    setFilter({
+      ...filter,
+      minUpsPct: newMinUpsPct,
+      onlyFeatured: newOnlyFeatured,
+    });
+  };
+
+  const handleCfbFilterChange = (newMinUpsPct: number, newOnlyTopGames: boolean) => {
+    setFilter({
+      ...filter,
+      minUpsPct: newMinUpsPct,
+      onlyTopGames: newOnlyTopGames,
+    });
+  };
+
   // NFL weekly grouping
   const nflGroups = useMemo(() => {
     if (!isNflMode) return [];
@@ -83,6 +153,61 @@ export const HomeScreen: React.FC = () => {
     if (!isNflMode) return [];
     return getPrimeTimeGames(filteredGames);
   }, [isNflMode, filteredGames]);
+
+  // NBA grouping
+  const nbaGroups = useMemo(() => {
+    if (!isNbaMode) return [];
+    return groupNbaGamesByDay(filteredGames);
+  }, [isNbaMode, filteredGames]);
+
+  const nationalTvGames = useMemo(() => {
+    if (!isNbaMode) return [];
+    return getNationalTvGames(filteredGames);
+  }, [isNbaMode, filteredGames]);
+
+  // MLB grouping
+  const mlbGroups = useMemo(() => {
+    if (!isMlbMode) return [];
+    return groupMlbGamesByDay(filteredGames);
+  }, [isMlbMode, filteredGames]);
+
+  const highStakesGames = useMemo(() => {
+    if (!isMlbMode) return [];
+    return getHighStakesGames(filteredGames);
+  }, [isMlbMode, filteredGames]);
+
+  // NHL grouping
+  const nhlGroups = useMemo(() => {
+    if (!isNhlMode) return [];
+    return groupNhlGamesByDay(filteredGames);
+  }, [isNhlMode, filteredGames]);
+
+  const marqueeGames = useMemo(() => {
+    if (!isNhlMode) return [];
+    return getMarqueeGames(filteredGames);
+  }, [isNhlMode, filteredGames]);
+
+  // Soccer grouping
+  const soccerGroups = useMemo(() => {
+    if (!isSoccerMode) return [];
+    return groupSoccerGamesByDay(filteredGames);
+  }, [isSoccerMode, filteredGames]);
+
+  const featuredMatches = useMemo(() => {
+    if (!isSoccerMode) return [];
+    return getFeaturedMatches(filteredGames);
+  }, [isSoccerMode, filteredGames]);
+
+  // CFB grouping
+  const cfbGroups = useMemo(() => {
+    if (!isCfbMode) return [];
+    return groupCfbGamesByDay(filteredGames);
+  }, [isCfbMode, filteredGames]);
+
+  const topGames = useMemo(() => {
+    if (!isCfbMode) return [];
+    return getTopGames(filteredGames);
+  }, [isCfbMode, filteredGames]);
 
   // Format fetched time for display
   const lastUpdated = useMemo(() => {
@@ -124,18 +249,26 @@ export const HomeScreen: React.FC = () => {
   );
 
   // Empty state component
-  const renderEmpty = () => (
-    <View className="items-center py-8">
-      <Text className="text-4xl mb-4">🏈</Text>
-      <Text className="text-base text-text-muted text-center">
-        {isNflMode 
-          ? 'No NFL games match your filters' 
-          : 'No games available for this sport'}
-      </Text>
-    </View>
-  );
+  const renderEmpty = () => {
+    const emoji = isNflMode ? '🏈' : isNbaMode ? '🏀' : isMlbMode ? '⚾' : isNhlMode ? '🏒' : isSoccerMode ? '⚽' : isCfbMode ? '🏈' : '📊';
+    return (
+      <View className="items-center py-8">
+        <Text className="text-4xl mb-4">{emoji}</Text>
+        <Text className="text-base text-text-muted text-center">
+          {isSportMode 
+            ? `No ${currentSport} games match your filters` 
+            : 'No games available for this sport'}
+        </Text>
+      </View>
+    );
+  };
 
-  const renderNflView = () => {
+  // Generic sport view renderer
+  const renderSportView = (
+    featuredGames: GameWithPrediction[],
+    groups: Array<{ label: string; games: GameWithPrediction[] }>,
+    featuredTitle: string
+  ) => {
     if (loading && filteredGames.length === 0) {
       return renderLoading();
     }
@@ -158,13 +291,13 @@ export const HomeScreen: React.FC = () => {
         }
       >
         <View className="gap-4">
-          {/* Prime Time Risk Section */}
-          {primeTimeGames.length > 0 && (
+          {/* Featured Games Section */}
+          {featuredGames.length > 0 && (
             <View className="gap-3">
               <Text className="text-base font-extrabold text-text-primary">
-                Prime Time Risk
+                {featuredTitle}
               </Text>
-              {primeTimeGames.map((game) => (
+              {featuredGames.map((game) => (
                 <UpsetCard
                   key={game.id}
                   game={game}
@@ -177,7 +310,7 @@ export const HomeScreen: React.FC = () => {
           )}
 
           {/* Day-by-Day Sections */}
-          {nflGroups.map((group) => (
+          {groups.map((group) => (
             <View key={group.label} className="gap-3">
               <Text className="text-base font-extrabold text-text-primary">
                 {group.label}
@@ -194,10 +327,34 @@ export const HomeScreen: React.FC = () => {
             </View>
           ))}
 
-          {nflGroups.length === 0 && primeTimeGames.length === 0 && renderEmpty()}
+          {groups.length === 0 && featuredGames.length === 0 && renderEmpty()}
         </View>
       </ScrollView>
     );
+  };
+
+  const renderNflView = () => {
+    return renderSportView(primeTimeGames, nflGroups, 'Prime Time Risk');
+  };
+
+  const renderNbaView = () => {
+    return renderSportView(nationalTvGames, nbaGroups, 'National TV Games');
+  };
+
+  const renderMlbView = () => {
+    return renderSportView(highStakesGames, mlbGroups, 'High-Stakes Games');
+  };
+
+  const renderNhlView = () => {
+    return renderSportView(marqueeGames, nhlGroups, 'Marquee Matchups');
+  };
+
+  const renderSoccerView = () => {
+    return renderSportView(featuredMatches, soccerGroups, 'Featured Matches');
+  };
+
+  const renderCfbView = () => {
+    return renderSportView(topGames, cfbGroups, 'Top Games');
   };
 
   const renderRegularView = () => {
@@ -257,16 +414,16 @@ export const HomeScreen: React.FC = () => {
             )}
           </View>
         </View>
-        {isNflMode && (
+        {isSportMode && currentSport && (
           <Text className="text-xs text-text-muted self-start mt-1">
-            NFL • This week
+            {currentSport} • This week
           </Text>
         )}
       </View>
 
       <FilterBar onFilterChange={setFilter} currentFilter={filter} />
 
-      {/* NFL Filters - only show when NFL is selected */}
+      {/* Sport-specific Filters */}
       {isNflMode && (
         <NflFilters
           minUpsPct={minUpsPct}
@@ -275,9 +432,55 @@ export const HomeScreen: React.FC = () => {
           setOnlyPrimeTime={(value) => handleNflFilterChange(minUpsPct, value)}
         />
       )}
+      {isNbaMode && (
+        <NbaFilters
+          minUpsPct={minUpsPct}
+          setMinUpsPct={(value) => handleNbaFilterChange(value, onlyNationalTv)}
+          onlyNationalTv={onlyNationalTv}
+          setOnlyNationalTv={(value) => handleNbaFilterChange(minUpsPct, value)}
+        />
+      )}
+      {isMlbMode && (
+        <MlbFilters
+          minUpsPct={minUpsPct}
+          setMinUpsPct={(value) => handleMlbFilterChange(value, onlyHighStakes)}
+          onlyHighStakes={onlyHighStakes}
+          setOnlyHighStakes={(value) => handleMlbFilterChange(minUpsPct, value)}
+        />
+      )}
+      {isNhlMode && (
+        <NhlFilters
+          minUpsPct={minUpsPct}
+          setMinUpsPct={(value) => handleNhlFilterChange(value, onlyMarquee)}
+          onlyMarquee={onlyMarquee}
+          setOnlyMarquee={(value) => handleNhlFilterChange(minUpsPct, value)}
+        />
+      )}
+      {isSoccerMode && (
+        <SoccerFilters
+          minUpsPct={minUpsPct}
+          setMinUpsPct={(value) => handleSoccerFilterChange(value, onlyFeatured)}
+          onlyFeatured={onlyFeatured}
+          setOnlyFeatured={(value) => handleSoccerFilterChange(minUpsPct, value)}
+        />
+      )}
+      {isCfbMode && (
+        <CfbFilters
+          minUpsPct={minUpsPct}
+          setMinUpsPct={(value) => handleCfbFilterChange(value, onlyTopGames)}
+          onlyTopGames={onlyTopGames}
+          setOnlyTopGames={(value) => handleCfbFilterChange(minUpsPct, value)}
+        />
+      )}
 
-      {/* Conditionally render NFL weekly view or regular flat list */}
-      {isNflMode ? renderNflView() : renderRegularView()}
+      {/* Conditionally render sport-specific view or regular flat list */}
+      {isNflMode ? renderNflView() : 
+       isNbaMode ? renderNbaView() :
+       isMlbMode ? renderMlbView() :
+       isNhlMode ? renderNhlView() :
+       isSoccerMode ? renderSoccerView() :
+       isCfbMode ? renderCfbView() :
+       renderRegularView()}
 
       {/* Floating Alerts Button */}
       <TouchableOpacity
